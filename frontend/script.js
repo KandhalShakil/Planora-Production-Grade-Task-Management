@@ -19,18 +19,15 @@ const taskList = document.getElementById('taskList'),
       taskModal = document.getElementById('taskModal'),
       taskForm = document.getElementById('taskForm'),
       openAddModalBtn = document.getElementById('openAddModal'),
-      closeModalBtns = document.querySelectorAll('.close-modal'),
-      paginationContainer = document.getElementById('pagination');
+      closeModalBtns = document.querySelectorAll('.close-modal');
 
 // ─── App State ──────────────────────────────────────────────────
-const PAGE_SIZE = 6;
 let allTasks = [],
     isFetching = false,
     activeStatus = '',
     activePriority = '',
     activeSearch = '',
-    activeSort = '-createdAt',
-    activePage = 1;
+    activeSort = '-createdAt';
 
 // ─── INITIALIZE: fetch once on page load ────────────────────────
 document.addEventListener('DOMContentLoaded', () => fetchAllTasks());
@@ -76,11 +73,7 @@ function applyFiltersAndRender() {
     }
     tasks = sortTasks(tasks, activeSort);
     taskCount.textContent = tasks.length;
-    const totalPages = Math.ceil(tasks.length / PAGE_SIZE) || 1;
-    if (activePage > totalPages) activePage = 1;
-    const pageTasks = tasks.slice((activePage - 1) * PAGE_SIZE, activePage * PAGE_SIZE);
-    renderTasks(pageTasks);
-    renderPaginationLocal(activePage, totalPages);
+    renderTasks(tasks);
 }
 
 function sortTasks(tasks, sort) {
@@ -106,13 +99,12 @@ navItems.forEach(item => item.addEventListener('click', () => {
     navItems.forEach(i => i.classList.remove('active'));
     item.classList.add('active');
     activeStatus = item.dataset.status || '';
-    activePage = 1;
     applyFiltersAndRender();
     if (window.innerWidth <= 1024) { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('active'); }
 }));
-searchInput.addEventListener('input', debounce(() => { activeSearch = searchInput.value.trim(); activePage = 1; applyFiltersAndRender(); }, 200));
-sortSelect.addEventListener('change', () => { activeSort = sortSelect.value; activePage = 1; applyFiltersAndRender(); });
-priorityFilter.addEventListener('change', () => { activePriority = priorityFilter.value; activePage = 1; applyFiltersAndRender(); });
+searchInput.addEventListener('input', debounce(() => { activeSearch = searchInput.value.trim(); applyFiltersAndRender(); }, 200));
+sortSelect.addEventListener('change', () => { activeSort = sortSelect.value; applyFiltersAndRender(); });
+priorityFilter.addEventListener('change', () => { activePriority = priorityFilter.value; applyFiltersAndRender(); });
 logoutBtn.addEventListener('click', () => { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; });
 
 // ─── UI HELPERS ─────────────────────────────────────────────────
@@ -179,39 +171,7 @@ function buildTaskCard(task) {
     `;
 }
 
-function renderPaginationLocal(page, totalPages) {
-    if (totalPages <= 1) { paginationContainer.innerHTML = ''; return; }
-    const pages = [];
-    const addRange = (from, to) => { for (let i = from; i <= to; i++) pages.push(i); };
-
-    if (totalPages <= 7) {
-        addRange(1, totalPages);
-    } else {
-        pages.push(1);
-        if (page > 3) pages.push('...');
-
-        const start = Math.max(2, page - 1);
-        const end = Math.min(totalPages - 1, page + 1);
-        addRange(start, end);
-
-        if (page < totalPages - 2) pages.push('...');
-        pages.push(totalPages);
-    }
-
-    let html = `<button class="pagination-btn pagination-prev ${page === 1 ? 'disabled' : ''}" onclick="changePage(${page - 1})" ${page === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
-    for (const item of pages) {
-        if (item === '...') {
-            html += `<span class="pagination-ellipsis">...</span>`;
-        } else {
-            const isActive = item === page;
-            html += `<button class="pagination-btn ${isActive ? 'active' : ''}" onclick="changePage(${item})">${isActive ? '<i class="fas fa-arrow-up-right"></i> ' : ''}${item}</button>`;
-        }
-    }
-    html += `<button class="pagination-btn pagination-next ${page === totalPages ? 'disabled' : ''}" onclick="changePage(${page + 1})" ${page === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
-    paginationContainer.innerHTML = html;
-}
-function changePage(page) { activePage = page; applyFiltersAndRender(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-function clearAllFilters() { activeStatus = ''; activePriority = ''; activeSearch = ''; activePage = 1; searchInput.value = ''; priorityFilter.value = ''; navItems.forEach(i => i.classList.remove('active')); navItems[0]?.classList.add('active'); applyFiltersAndRender(); }
+function clearAllFilters() { activeStatus = ''; activePriority = ''; activeSearch = ''; searchInput.value = ''; priorityFilter.value = ''; navItems.forEach(i => i.classList.remove('active')); navItems[0]?.classList.add('active'); applyFiltersAndRender(); }
 
 
 const setMinDate = () => { const el = document.getElementById('dueDate'); if (el) el.setAttribute('min', new Date().toISOString().split('T')[0]); };
