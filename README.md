@@ -256,7 +256,7 @@ All responses follow the shape `{ success: boolean, data?: object, message?: str
 
 ## 👤 Author
 
-**Kandhal Shakil** — [GitHub](https://github.com/KandhalShakil) · [LinkedIn](https://linkedin.com/in/kandhalshakil)
+**Kandhal Shakil** — [GitHub](https://github.com/KandhalShakil) · [LinkedIn](https://www.linkedin.com/in/kandhal-shakil-5311302b6)
 
 ---
 
